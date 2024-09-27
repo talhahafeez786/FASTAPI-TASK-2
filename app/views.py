@@ -4,14 +4,13 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 
-import models
-import security
-from database import SessionLocal, engine
+from app import models, security  # Updated imports
+from app.database import SessionLocal, engine  # Updated imports
 
 models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")  # Updated path
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -45,7 +44,7 @@ async def login_user(request: Request, form_data: OAuth2PasswordRequestForm = De
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect username or password")
     response = RedirectResponse("/profile", status_code=status.HTTP_302_FOUND)
-    response.set_cookie(key="session", value="some_session_token")  # Here you should use a proper session management
+    response.set_cookie(key="session", value="some_session_token")  # Proper session management required here
     return response
 
 @router.get("/profile", response_class=HTMLResponse)
